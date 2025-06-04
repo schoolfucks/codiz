@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HTML Game Hub</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <h1>Upload & Play HTML Games</h1>
+  <form id="uploadForm" enctype="multipart/form-data">
+    <input type="file" name="gameZip" accept=".zip" required>
+    <button type="submit">Upload</button>
+  </form>
+
+  <h2>Available Games</h2>
+  <ul id="gameList"></ul>
+
+  <div id="player" style="display: none;">
+    <button onclick="closeGame()">Close</button>
+    <iframe id="gameFrame" frameborder="0"></iframe>
+  </div>
+
+  <script>
+    async function loadGames() {
+      const res = await fetch('/games');
+      const games = await res.json();
+      const list = document.getElementById('gameList');
+      list.innerHTML = '';
+      games.forEach(name => {
+        const li = document.createElement('li');
+        li.innerHTML = `<button onclick="playGame('${name}')">${name}</button>`;
+        list.appendChild(li);
+      });
+    }
+
+    document.getElementById('uploadForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      await fetch('/upload', {
+        method: 'POST',
+        body: formData
+      });
+      loadGames();
+    };
+
+    function playGame(name) {
+      document.getElementById('player').style.display = 'block';
+      document.getElementById('gameFrame').src = `/games/${name}/index.html`;
+    }
+
+    function closeGame() {
+      document.getElementById('player').style.display = 'none';
+      document.getElementById('gameFrame').src = '';
+    }
+
+    loadGames();
+  </script>
+</body>
+</html>
